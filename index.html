@@ -1,766 +1,210 @@
-<!DOCTYPE html>
-<html lang="th">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>คำศัพท์ AI พื้นฐาน · 15 คำ</title>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@200;300;400;500;600&family=Sarabun:wght@200;300;400;500&display=swap');
-
-  :root{
-    /* Soft sky palette to match reference */
-    --label:     #1d3a52;   /* primary text — deep slate-blue */
-    --label-2:   #4f6f88;   /* secondary */
-    --label-3:   #80a0b8;   /* tertiary  */
-    --blue:      #2f86c9;   /* accent */
-    --hairline:  rgba(255,255,255,0.55);
-    --glass:     rgba(255,255,255,0.42);
-  }
-
-  *{ margin:0; padding:0; box-sizing:border-box; -webkit-font-smoothing:antialiased; }
-  html,body{ height:100%; overflow:hidden; }
-  body{
-    font-family:'Sarabun', -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
-    color:var(--label);
-    user-select:none; -webkit-user-select:none;
-    background:#cfe3f5;
-  }
-
-  /* ---------- iOS Liquid Glass mesh gradient backdrop ---------- */
-  #bg{
-    position:fixed; inset:0; z-index:0; overflow:hidden;
-    background:
-      radial-gradient(42% 50% at 18% 22%, rgba(120,180,255,0.95) 0%, transparent 60%),
-      radial-gradient(46% 52% at 82% 18%, rgba(190,150,255,0.90) 0%, transparent 62%),
-      radial-gradient(50% 55% at 75% 80%, rgba(120,230,210,0.85) 0%, transparent 60%),
-      radial-gradient(48% 50% at 22% 82%, rgba(255,170,210,0.82) 0%, transparent 60%),
-      radial-gradient(60% 60% at 50% 50%, rgba(160,200,255,0.55) 0%, transparent 70%),
-      linear-gradient(150deg, #dfeafe 0%, #eaddff 40%, #d8f3ec 70%, #ffe6f1 100%);
-    filter:saturate(1.05);
-  }
-  /* drifting blobs add the liquid motion */
-  #bg::before, #bg::after{
-    content:""; position:absolute; border-radius:50%;
-    filter:blur(70px); opacity:0.55; mix-blend-mode:screen;
-  }
-  #bg::before{
-    width:60vmax; height:60vmax; left:-12vmax; top:-14vmax;
-    background:radial-gradient(circle, rgba(130,170,255,0.9), transparent 65%);
-    animation:drift1 22s ease-in-out infinite;
-  }
-  #bg::after{
-    width:55vmax; height:55vmax; right:-14vmax; bottom:-16vmax;
-    background:radial-gradient(circle, rgba(180,140,255,0.85), transparent 65%);
-    animation:drift2 27s ease-in-out infinite;
-  }
-  @keyframes drift1{
-    0%,100%{ transform:translate(0,0) scale(1); }
-    33%{ transform:translate(22vw,12vh) scale(1.15); }
-    66%{ transform:translate(8vw,30vh) scale(0.95); }
-  }
-  @keyframes drift2{
-    0%,100%{ transform:translate(0,0) scale(1); }
-    40%{ transform:translate(-20vw,-10vh) scale(1.1); }
-    70%{ transform:translate(-6vw,-26vh) scale(0.92); }
-  }
-
-  /* ---------- Header : Apple-style, generous whitespace, left-aligned ---------- */
-  header{
-    position:fixed; top:0; left:0; right:0; z-index:30;
-    padding:clamp(28px,5vh,56px) clamp(24px,6vw,80px) 0;
-    pointer-events:none;
-  }
-  .eyebrow{
-    font-family:'Kanit',sans-serif; font-weight:500;
-    font-size:0.72rem; letter-spacing:0.36em; text-transform:uppercase;
-    color:var(--blue); margin-bottom:14px;
-  }
-  h1{
-    font-family:'Kanit',sans-serif; font-weight:300;
-    font-size:clamp(2rem,5.2vw,3.6rem); line-height:1.04;
-    letter-spacing:-0.02em; color:var(--label);
-    text-shadow:0 1px 12px rgba(255,255,255,0.45);
-  }
-  h1 b{ font-weight:600; }
-  .sub{
-    margin-top:18px; max-width:30em;
-    font-weight:300; font-size:clamp(0.92rem,1.6vw,1.06rem);
-    line-height:1.55; color:var(--label-2);
-  }
-
-  /* ---------- Stage ---------- */
-  #stage{ position:absolute; inset:0; z-index:10; cursor:grab; }
-  #stage.dragging{ cursor:grabbing; }
-
-  /* ---------- Realistic soap bubble (clear, watery style) ---------- */
-  .bubble{
-    position:absolute; border-radius:50%;
-    display:flex; align-items:center; justify-content:center;
-    text-align:center; will-change:transform; cursor:grab;
-  }
-  .bubble.grabbed{ cursor:grabbing; z-index:200 !important; }
-
-  /* glassy body — almost clear, lets the sky show through, faint cool tint */
-  .bubble .film{
-    position:absolute; inset:0;
-    border-radius:var(--shapeA, 50%);
-    animation:morph var(--morphDur,12s) var(--morphDelay,0s) ease-in-out infinite alternate;
-    background:
-      radial-gradient(circle at 38% 32%,
-        rgba(255,255,255,0.28) 0%,
-        rgba(255,255,255,0.05) 22%,
-        rgba(255,255,255,0.00) 42%),
-      radial-gradient(circle at 50% 50%,
-        rgba(255,255,255,0.00) 60%,
-        rgba(255,255,255,0.06) 80%,
-        rgba(255,255,255,0.22) 93%,
-        rgba(255,255,255,0.04) 100%),
-      radial-gradient(circle at 62% 70%,
-        rgba(180,215,235,0.10) 0%,
-        rgba(180,215,235,0.00) 50%);
-    box-shadow:
-      inset 0 0 22px rgba(255,255,255,0.20),
-      inset 6px 10px 30px rgba(255,255,255,0.10),
-      0 14px 34px -14px rgba(60,110,150,0.45);
-    overflow:hidden;
-  }
-  @keyframes morph{
-    from{ border-radius:var(--shapeA, 50%); }
-    to{   border-radius:var(--shapeB, 50%); }
-  }
-
-  /* very subtle iridescence — barely-there, cool wash, NOT rainbow */
-  .bubble .iris{
-    position:absolute; inset:-25%; border-radius:50%;
-    background:conic-gradient(from var(--ang,0deg) at 42% 40%,
-      rgba(190,225,240,0.00) 0deg,
-      rgba(170,210,255,0.12) 70deg,
-      rgba(200,240,225,0.10) 150deg,
-      rgba(230,225,250,0.10) 230deg,
-      rgba(180,220,255,0.12) 310deg,
-      rgba(190,225,240,0.00) 360deg);
-    filter:blur(10px);
-    mix-blend-mode:screen;
-    opacity:0.7;
-  }
-  .bubble .iris2{
-    position:absolute; inset:14%; border-radius:50%;
-    background:radial-gradient(circle at 60% 66%,
-      rgba(255,255,255,0.16) 0%,
-      rgba(210,235,250,0.06) 38%,
-      transparent 62%);
-    mix-blend-mode:screen;
-  }
-
-  /* bright soap-film rim — the defining feature of these bubbles */
-  .bubble .rim{
-    position:absolute; inset:0;
-    border-radius:var(--shapeA, 50%);
-    animation:morph var(--morphDur,12s) var(--morphDelay,0s) ease-in-out infinite alternate;
-    box-shadow:
-      inset 0 0 2px 1.5px rgba(255,255,255,0.85),
-      inset 0 0 10px 2px rgba(255,255,255,0.30);
-    background:
-      radial-gradient(circle at 50% 50%, transparent 80%,
-        rgba(255,255,255,0.22) 90%,
-        rgba(255,255,255,0.42) 96%,
-        rgba(255,255,255,0.10) 100%);
-  }
-
-  /* large soft specular sweep, upper-left */
-  .bubble .spec{
-    position:absolute; width:48%; height:34%;
-    left:14%; top:11%;
-    background:radial-gradient(ellipse at center,
-      rgba(255,255,255,0.80) 0%,
-      rgba(255,255,255,0.22) 45%,
-      transparent 74%);
-    border-radius:50%;
-    transform:rotate(-20deg);
-    filter:blur(2px);
-  }
-  /* secondary diffuse highlight, lower-right (per reference) */
-  .bubble .glint{
-    position:absolute; width:30%; height:24%;
-    right:16%; bottom:18%;
-    background:radial-gradient(ellipse at center,
-      rgba(255,255,255,0.45) 0%,
-      transparent 70%);
-    border-radius:50%;
-    filter:blur(3px);
-  }
-
-  .bubble .label{ position:relative; z-index:5; padding:8px; pointer-events:none; display:flex; flex-direction:column; align-items:center; }
-  .bubble .term{
-    font-family:'Kanit',sans-serif; font-weight:500; color:#15384f;
-    line-height:1.05; text-shadow:0 1px 6px rgba(255,255,255,0.7);
-  }
-  .bubble .abbr{
-    display:block; font-family:'Kanit',sans-serif; font-weight:300;
-    color:#356f96; letter-spacing:0.02em; margin-top:3px;
-    text-shadow:0 1px 5px rgba(255,255,255,0.7);
-  }
-  /* explanation text — hidden until the bubble expands */
-  .bubble .desc{
-    position:relative; z-index:5; pointer-events:none;
-    margin-top:0; max-width:80%;
-    font-family:'Sarabun',sans-serif; font-weight:400; font-size:0.92rem;
-    line-height:1.5; color:#264a63;
-    text-shadow:0 1px 5px rgba(255,255,255,0.85);
-    opacity:0; max-height:0; overflow:hidden; transform:translateY(6px);
-    transition:opacity .3s ease .1s, transform .35s ease .1s, max-height .4s ease, margin-top .4s ease;
-  }
-  .bubble.expanded{ z-index:300 !important; cursor:zoom-out; }
-  .bubble.expanded .desc{ opacity:1; max-height:260px; margin-top:12px; transform:translateY(0); }
-  .bubble.expanded .term{ font-size:1.5rem !important; }
-  .bubble.expanded .abbr{ font-size:0.95rem !important; }
-  /* when expanded: gentler asymmetry — still organic, but calm enough to read */
-  .bubble.expanded .film, .bubble.expanded .rim{
-    border-radius:var(--shapeEA, 50%);
-    animation:morphE var(--morphDurE,11s) ease-in-out infinite alternate;
-    transition:border-radius .5s ease;
-  }
-  @keyframes morphE{
-    from{ border-radius:var(--shapeEA, 50%); }
-    to{   border-radius:var(--shapeEB, 50%); }
-  }
-
-  @keyframes pop{
-    0%{ transform:translate(var(--tx),var(--ty)) scale(1); opacity:1; }
-    55%{ transform:translate(var(--tx),var(--ty)) scale(1.28); opacity:0.5; }
-    100%{ transform:translate(var(--tx),var(--ty)) scale(1.6); opacity:0; }
-  }
-  .bubble.popping{ animation:pop .42s cubic-bezier(.3,.7,.4,1) forwards; pointer-events:none; }
-
-  /* tiny droplet bubbles that scatter when a bubble bursts */
-  /* faint ghost left behind while dragging a bubble fast */
-  .trail{
-    position:absolute; z-index:120; border-radius:50%;
-    pointer-events:none; will-change:transform,opacity;
-    background:radial-gradient(circle at 40% 38%,
-      rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.10) 30%, transparent 60%);
-    box-shadow:inset 0 0 6px rgba(255,255,255,0.4);
-    opacity:0.5; transform:scale(1);
-    transition:opacity .55s ease-out, transform .55s ease-out;
-  }
-  .trail.fade{ opacity:0; transform:scale(0.7); }
-
-  .droplet{
-    position:absolute; z-index:160; border-radius:50%;
-    pointer-events:none; will-change:transform,opacity;
-    background:
-      radial-gradient(circle at 36% 32%, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.15) 30%, transparent 55%),
-      radial-gradient(circle at 50% 50%, transparent 60%, rgba(255,255,255,0.5) 88%, transparent 100%);
-    box-shadow:inset 0 0 4px rgba(255,255,255,0.6), 0 2px 6px -2px rgba(80,120,160,0.4);
-    opacity:0; transform:translate(0,0) scale(0.5);
-  }
-  .droplet.show{ opacity:0.95; transform:translate(0,0) scale(1); transition:opacity .18s ease-out, transform .18s ease-out; }
-  .droplet.fly{
-    opacity:0;
-    transform:translate(var(--fx,0),var(--fy,0)) scale(var(--fs,0.5));
-    transition:transform var(--dropDur,2.4s) cubic-bezier(.12,.5,.25,1),
-               opacity var(--dropDur,2.4s) cubic-bezier(.4,0,.85,.4);
-  }
-
-  /* ---------- footer hints, quiet ---------- */
-  .hint{
-    position:fixed; bottom:clamp(16px,3vh,26px); right:clamp(20px,5vw,42px);
-    z-index:25; font-family:'Kanit',sans-serif; font-weight:300; font-size:0.78rem;
-    color:var(--label-3); pointer-events:none;
-    display:flex; align-items:center; gap:8px;
-  }
-  .hint .dot{ width:6px; height:6px; border-radius:50%; background:var(--blue); animation:blink 1.8s ease infinite; }
-  @keyframes blink{ 50%{ opacity:0.25; } }
-
-  /* ---------- control buttons (liquid glass) ---------- */
-  .controls{
-    position:fixed; z-index:40;
-    left:clamp(20px,6vw,80px); bottom:clamp(16px,3vh,28px);
-    display:flex; gap:10px;
-  }
-  .controls button{
-    font-family:'Kanit',sans-serif; font-weight:400; font-size:0.85rem;
-    color:var(--label); cursor:pointer;
-    padding:9px 16px; border-radius:999px;
-    background:rgba(255,255,255,0.42);
-    -webkit-backdrop-filter:blur(20px) saturate(180%);
-    backdrop-filter:blur(20px) saturate(180%);
-    border:1px solid rgba(255,255,255,0.6);
-    box-shadow:0 6px 18px -8px rgba(50,100,140,0.5);
-    transition:transform .15s ease, background .2s ease, opacity .2s ease;
-  }
-  .controls button:hover:not(:disabled){ transform:translateY(-1px); background:rgba(255,255,255,0.6); }
-  .controls button:active:not(:disabled){ transform:translateY(0) scale(0.97); }
-  .controls button:disabled{ opacity:0.4; cursor:default; }
-  .controls button:focus-visible{ outline:2px solid var(--blue); outline-offset:2px; }
-
-  @media (prefers-reduced-motion: reduce){
-    .hint .dot{ animation:none; }
-    #bg::before, #bg::after{ animation:none; }
-    .bubble .film, .bubble .rim{ animation:none; }
-  }
-</style>
-</head>
-<body>
-
-<div id="bg"></div>
-
-<header>
-  <div class="eyebrow">AI Literacy</div>
-  <h1>คำศัพท์ <b>AI</b> พื้นฐาน<br>ที่ควรรู้ 15 คำ</h1>
-  <p class="sub">ลากฟองสบู่ด้วยเมาส์ — ฟองชนและเด้งตามฟิสิกส์ พร้อมยืดหดเมื่อกระทบ แตะหนึ่งครั้งเพื่อขยายดูความหมาย แตะอีกครั้งเพื่อย่อกลับ หรือกดค้างเพื่อให้ฟองแตก</p>
-</header>
-
-<div id="stage"></div>
-
-<div class="hint"><span class="dot"></span> ลากได้ · แตะเพื่อขยาย/ย่อ · กดค้างให้แตก</div>
-
-<div class="controls">
-  <button id="undoBtn" type="button" disabled>↩ ย้อนกลับ</button>
-  <button id="resetBtn" type="button" disabled>↻ เริ่มต้นใหม่</button>
+<div style="display:flex;justify-content:center;padding:1rem 0;">
+<div id="wrap" style="position:relative;width:100%;max-width:480px;touch-action:none;user-select:none;-webkit-user-select:none;">
+  <canvas id="game" width="480" height="640" style="display:block;width:100%;height:auto;border:4px solid #1a1a2e;border-radius:8px;touch-action:none;"></canvas>
+  <div id="hud" style="position:absolute;top:14px;right:18px;text-align:right;pointer-events:none;font-family:'Trebuchet MS',sans-serif;">
+    <div id="score" style="font-size:28px;font-weight:800;color:#fff;text-shadow:2px 2px 0 #000,-1px -1px 0 #000;">0</div>
+    <div id="best" style="font-size:14px;font-weight:700;color:#ffe0a0;text-shadow:1px 1px 0 #000;">BEST 0</div>
+  </div>
+  <div id="overlay" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;background:rgba(0,0,0,0.45);color:#fff;text-align:center;border-radius:8px;gap:14px;font-family:'Trebuchet MS',sans-serif;">
+    <h1 style="font-size:38px;text-shadow:3px 3px 0 #000;margin:0;color:#fff;">ANGRY BIRD</h1>
+    <p style="font-size:18px;text-shadow:2px 2px 0 #000;margin:0;">แตะหน้าจอ / กด SPACE เพื่อกระโดด<br>หลบท่อและศัตรูให้ได้!</p>
+    <button id="startBtn" style="margin-top:8px;padding:12px 28px;font-size:18px;font-weight:700;color:#fff;background:#e52521;border:3px solid #fff;border-radius:8px;cursor:pointer;box-shadow:0 4px 0 #a31410;font-family:'Trebuchet MS',sans-serif;">เริ่มเกม</button>
+  </div>
 </div>
-
+</div>
 <script>
-const TERMS = [
-  { term:"AI", abbr:"Artificial Intelligence", desc:"ปัญญาประดิษฐ์ — ระบบคอมพิวเตอร์ที่ทำงานซึ่งปกติต้องใช้สติปัญญาของมนุษย์ เช่น การเรียนรู้ การให้เหตุผล และการตัดสินใจ", r:82 },
-  { term:"Machine Learning", abbr:"ML", desc:"การเรียนรู้ของเครื่อง — ให้คอมพิวเตอร์เรียนรู้รูปแบบจากข้อมูลเพื่อทำนายหรือตัดสินใจ โดยไม่ต้องเขียนกฎตายตัว", r:70 },
-  { term:"Deep Learning", abbr:"DL", desc:"การเรียนรู้เชิงลึก — ML ที่ใช้โครงข่ายประสาทเทียมหลายชั้น เหมาะกับงานภาพ เสียง และภาษา", r:62 },
-  { term:"Neural Network", abbr:"NN", desc:"โครงข่ายประสาทเทียม — โครงสร้างหน่วยประมวลผลเชื่อมกันเป็นชั้น ๆ เลียนแบบเซลล์สมอง เป็นหัวใจของ Deep Learning", r:58 },
-  { term:"Algorithm", abbr:"อัลกอริทึม", desc:"ชุดขั้นตอนหรือกฎที่คอมพิวเตอร์ทำตามเพื่อแก้ปัญหาหรือประมวลผลข้อมูลให้ได้ผลลัพธ์", r:54 },
-  { term:"Data", abbr:"ข้อมูล", desc:"ข้อเท็จจริง ตัวเลข ข้อความ หรือรูปภาพ ที่เป็นวัตถุดิบให้ AI เรียนรู้และทำงาน", r:50 },
-  { term:"Training Data", abbr:"ข้อมูลฝึก", desc:"ชุดข้อมูลที่ใช้สอนโมเดล คุณภาพและความหลากหลายส่งผลต่อความสามารถของ AI โดยตรง", r:56 },
-  { term:"Model", abbr:"โมเดล", desc:"ผลลัพธ์จากการฝึก AI ด้วยข้อมูล — เป็นตัวที่นำไปใช้ทำนายหรือสร้างผลลัพธ์ใหม่", r:52 },
-  { term:"LLM", abbr:"Large Language Model", desc:"โมเดลภาษาขนาดใหญ่ — AI ที่ฝึกจากข้อความมหาศาลเพื่อเข้าใจและสร้างภาษามนุษย์ เช่น Claude", r:60 },
-  { term:"Generative AI", abbr:"GenAI", desc:"AI เชิงสร้างสรรค์ — สร้างเนื้อหาใหม่ได้ ทั้งข้อความ รูปภาพ เสียง หรือโค้ด", r:58 },
-  { term:"Prompt", abbr:"คำสั่ง / คำถาม", desc:"ข้อความที่ผู้ใช้ป้อนให้ AI เพื่อกำหนดสิ่งที่ต้องการ ยิ่งชัดเจน ผลลัพธ์ยิ่งตรงใจ", r:48 },
-  { term:"Token", abbr:"หน่วยข้อความ", desc:"หน่วยย่อยของข้อความที่โมเดลประมวลผล ใช้วัดความยาวและค่าใช้จ่ายในการใช้งาน", r:46 },
-  { term:"Chatbot", abbr:"แชตบอต", desc:"โปรแกรมที่โต้ตอบกับผู้ใช้ด้วยภาษาธรรมชาติผ่านการแชต ปัจจุบันมักขับเคลื่อนด้วย LLM", r:50 },
-  { term:"Hallucination", abbr:"การมโน", desc:"เมื่อ AI สร้างข้อมูลที่ฟังดูน่าเชื่อแต่ผิดหรือไม่มีจริง จึงควรตรวจสอบคำตอบเสมอ", r:54 },
-  { term:"Bias", abbr:"อคติ", desc:"ความลำเอียงในผลลัพธ์ของ AI ที่มักติดมาจากข้อมูลฝึก อาจทำให้ตัดสินไม่เป็นธรรม", r:50 },
-];
+const cv = document.getElementById('game');
+const ctx = cv.getContext('2d');
+const W = cv.width, H = cv.height;
+const scoreEl = document.getElementById('score');
+const bestEl = document.getElementById('best');
+const overlay = document.getElementById('overlay');
+const startBtn = document.getElementById('startBtn');
 
-const stage = document.getElementById('stage');
-const bubbles = [];
-const W = () => stage.clientWidth;
-const H = () => stage.clientHeight;
-const rand = (a,b)=> a + Math.random()*(b-a);
-// build an 8-value border-radius — gentle asymmetry, never too far from round
-function blobRadius(lo, hi){
-  lo = lo||42; hi = hi||58;
-  const v = ()=> Math.round(rand(lo,hi));
-  return v()+'% '+v()+'% '+v()+'% '+v()+'% / '+v()+'% '+v()+'% '+v()+'% '+v()+'%';
-}
-const headerPad = () => Math.min(280, H()*0.34);
+// ---- ฟิสิกส์หนักขึ้น ----
+const GRAVITY = 0.55, FLAP = -9.5, PIPE_W = 70;
+const GROUND_H = 60;
+const START_DELAY = 50;
 
-// scale bubble sizes to the viewport so small screens aren't overcrowded
-function sizeScale(){
-  const s = Math.min(W(), H()) / 760;     // 760 = reference design size
-  return Math.max(0.55, Math.min(1.15, s));
-}
-let SCALE = sizeScale();
-// expanded radius: big enough to read, but never larger than the viewport allows
-function expandedR(baseR){
-  const cap = Math.min(W(), H()-headerPad()) * 0.42;
-  return Math.max(120*SCALE, Math.min(baseR*2.2, cap));
+let best = 0;
+try { best = parseInt(localStorage.getItem('ab_best') || '0') || 0; } catch(e) {}
+bestEl.textContent = 'BEST ' + best;
+
+// ---- ความยากปรับตามคะแนน (ไม่มีเพดานสำหรับความเร็ว) ----
+function difficulty() {
+  const t = Math.min(score / 25, 1);
+  return {
+    gap: 280 - 110 * t,                 // ช่องว่างแคบลง
+    speed: 1.6 + 0.08 * score,          // เร็วขึ้นเรื่อยๆ ไม่มีเพดาน
+    interval: Math.max(60, Math.round(150 - 4 * score)),
+    moving: score >= 6,                 // ท่อเริ่มขยับขึ้นลงหลังคะแนน 6
+    enemies: score >= 10                // ศัตรูเริ่มโผล่หลังคะแนน 10
+  };
 }
 
-TERMS.forEach((t)=>{
-  const el = document.createElement('div');
-  el.className = 'bubble';
-  const r = t.r * SCALE;
-  el.style.width = el.style.height = (r*2)+'px';
-  const fs = Math.max(10, r*0.25);
-  el.innerHTML =
-    '<div class="film"><div class="iris"></div><div class="iris2"></div></div>'+
-    '<div class="rim"></div><div class="spec"></div><div class="glint"></div>'+
-    '<div class="label"><div class="term" style="font-size:'+fs+'px">'+t.term+'</div>'+
-    '<span class="abbr" style="font-size:'+(fs*0.6)+'px">'+t.abbr+'</span>'+
-    '<div class="desc">'+t.desc+'</div></div>';
-  stage.appendChild(el);
+let bird, pipes, enemies, score, frame, state;
 
-  // organic, slightly-asymmetric shape (unique per bubble)
-  const shapeA = blobRadius(), shapeB = blobRadius();
-  el.style.setProperty('--shapeA', shapeA);
-  el.style.setProperty('--shapeB', shapeB);
-  // gentler shapes for the expanded state — still organic, easier to read
-  el.style.setProperty('--shapeEA', blobRadius(46,54));
-  el.style.setProperty('--shapeEB', blobRadius(46,54));
-  el.style.setProperty('--morphDurE', rand(10,15).toFixed(1)+'s');
-  // vary highlight placement & morph timing so no two look alike
-  const spec = el.querySelector('.spec');
-  const specRot = rand(-34,-6);
-  spec.style.left = rand(8,22)+'%'; spec.style.top = rand(7,18)+'%';
-  spec.style.transform = 'rotate('+specRot+'deg)';
-  const glint = el.querySelector('.glint');
-  glint.style.right = rand(10,26)+'%'; glint.style.bottom = rand(12,26)+'%';
-  el.style.setProperty('--morphDur', rand(9,16).toFixed(1)+'s');
-  el.style.setProperty('--morphDelay', (-rand(0,8)).toFixed(1)+'s');
-
-  bubbles.push({
-    el, iris: el.querySelector('.iris'),
-    spec: el.querySelector('.spec'), glint: el.querySelector('.glint'),
-    specX:parseFloat(spec.style.left), specY:parseFloat(spec.style.top), specRot:specRot,
-    r:r, baseR:r, expandR:expandedR(r), data:t,
-    isAI: bubbles.length===0,
-    x:0, y:0,
-    vx:rand(-0.5,0.5), vy:rand(-0.3,0.3),
-    sx:1, sy:1, ang:rand(0,360), angV:rand(-0.15,0.15),
-    // continuous jelly wobble while floating
-    wobPhase:rand(0,Math.PI*2), wobSpeed:rand(0.0012,0.0022), wobAmp:rand(0.03,0.06),
-    dragging:false, expanded:false, popped:false,
-    offx:0, offy:0, px:0, py:0, downT:0, moved:0, hold:null
-  });
-});
-
-// ----- initial layout: AI dead-center, others scattered around it -----
-const GOLD = Math.PI*(3-Math.sqrt(5));   // golden angle for even spread
-function layoutInitial(){
-  const cx = W()/2, cy = (headerPad() + H())/2;
-  const maxR = Math.min(W(), H()-headerPad()) * 0.46;
-  let k = 0;
-  bubbles.forEach((b,i)=>{
-    if(b.popped) return;
-    if(i===0){ b.x=cx; b.y=cy; return; }            // AI pinned to center
-    k++;
-    // golden-angle spiral — even angular spread, radius grows outward
-    const ang = k*GOLD + rand(-0.2,0.2);
-    const ring = Math.min(maxR, b.baseR*2.0 + Math.sqrt(k/bubbles.length)*maxR*0.95);
-    b.x = cx + Math.cos(ang)*ring;
-    b.y = cy + Math.sin(ang)*ring;
-    // keep inside bounds
-    b.x = Math.min(Math.max(b.r, b.x), W()-b.r);
-    b.y = Math.min(Math.max(headerPad()+b.r, b.y), H()-b.r);
+function reset() {
+  bird = { x: 120, y: H/2, r: 16, vy: 0 };
+  pipes = []; enemies = []; score = 0; frame = 0;
+  scoreEl.textContent = '0';
+}
+function spawnPipe() {
+  const d = difficulty();
+  const minTop = 60, maxTop = H - GROUND_H - d.gap - 60;
+  const top = minTop + Math.random() * (maxTop - minTop);
+  const move = d.moving && Math.random() < 0.55;
+  pipes.push({
+    x: W, top, gap: d.gap, scored: false,
+    baseTop: top, amp: move ? 40 + Math.random()*50 : 0,
+    phase: Math.random()*Math.PI*2, vmove: 0.03 + Math.random()*0.02
   });
 }
-
-// de-overlap layout (AI at index 0 stays fixed in the center)
-function deOverlap(){
-  for(let p=0;p<200;p++){
-    let moved=false;
-    for(let i=0;i<bubbles.length;i++){
-      if(bubbles[i].popped) continue;
-      for(let j=i+1;j<bubbles.length;j++){
-        const a=bubbles[i],b=bubbles[j];
-        if(b.popped) continue;
-        let dx=b.x-a.x,dy=b.y-a.y,d=Math.hypot(dx,dy)||0.01,min=a.r+b.r+8;
-        if(d<min){
-          const o=min-d, nx=dx/d, ny=dy/d; moved=true;
-          if(i===0){ b.x+=nx*o; b.y+=ny*o; }        // push only the other bubble away from AI
-          else { a.x-=nx*o*0.5; a.y-=ny*o*0.5; b.x+=nx*o*0.5; b.y+=ny*o*0.5; }
-        }
-      }
+function spawnEnemy() {
+  const y = 90 + Math.random() * (H - GROUND_H - 180);
+  enemies.push({ x: W + 20, y, r: 14, phase: Math.random()*Math.PI*2 });
+}
+function flap() { if (state === 'play') bird.vy = FLAP; }
+function start() {
+  reset(); state = 'play'; bird.vy = FLAP;
+  overlay.style.display = 'none';
+}
+function gameOver() {
+  state = 'over';
+  if (score > best) {
+    best = score;
+    try { localStorage.setItem('ab_best', String(best)); } catch(e) {}
+  }
+  bestEl.textContent = 'BEST ' + best;
+  overlay.style.display = 'flex';
+  overlay.querySelector('h1').textContent = 'GAME OVER';
+  overlay.querySelector('p').innerHTML = 'คะแนน: <b>' + score + '</b><br>สูงสุด: <b>' + best + '</b>';
+  startBtn.textContent = 'เล่นอีกครั้ง';
+}
+function drawCloud(x, y, s) {
+  ctx.fillStyle = '#fff';
+  ctx.beginPath();
+  ctx.arc(x, y, 14*s, 0, 7); ctx.arc(x+16*s, y-6*s, 18*s, 0, 7);
+  ctx.arc(x+34*s, y, 14*s, 0, 7); ctx.fill();
+}
+function drawBg() {
+  ctx.fillStyle = '#5c94fc'; ctx.fillRect(0, 0, W, H);
+  drawCloud(80, 110, 1); drawCloud(330, 70, 0.8); drawCloud(220, 200, 0.6);
+}
+function drawPipe(p) {
+  const bottomY = p.top + p.gap;
+  ctx.fillStyle = '#00a800';
+  ctx.fillRect(p.x, 0, PIPE_W, p.top);
+  ctx.fillRect(p.x, bottomY, PIPE_W, H - GROUND_H - bottomY);
+  ctx.fillStyle = '#3ce53c';
+  ctx.fillRect(p.x+6, 0, 8, p.top);
+  ctx.fillRect(p.x+6, bottomY, 8, H - GROUND_H - bottomY);
+  ctx.fillStyle = '#007000';
+  ctx.fillRect(p.x+PIPE_W-10, 0, 10, p.top);
+  ctx.fillRect(p.x+PIPE_W-10, bottomY, 10, H - GROUND_H - bottomY);
+  ctx.fillStyle = '#00a800';
+  ctx.fillRect(p.x-6, p.top-28, PIPE_W+12, 28);
+  ctx.fillRect(p.x-6, bottomY, PIPE_W+12, 28);
+  ctx.strokeStyle = '#004d00'; ctx.lineWidth = 2;
+  ctx.strokeRect(p.x-6, p.top-28, PIPE_W+12, 28);
+  ctx.strokeRect(p.x-6, bottomY, PIPE_W+12, 28);
+}
+function drawEnemy(e) {
+  ctx.save();
+  ctx.translate(e.x, e.y);
+  // ตัวศัตรู (สีม่วงมีปีกขยับ)
+  const wing = Math.sin(frame*0.3 + e.phase) * 6;
+  ctx.fillStyle = '#6b3fa0';
+  ctx.beginPath(); ctx.moveTo(-e.r, 0); ctx.lineTo(-e.r-10, -wing-4); ctx.lineTo(-e.r-4, 0); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(e.r, 0); ctx.lineTo(e.r+10, -wing-4); ctx.lineTo(e.r+4, 0); ctx.fill();
+  ctx.fillStyle = '#8a52cf';
+  ctx.beginPath(); ctx.arc(0, 0, e.r, 0, 7); ctx.fill();
+  ctx.fillStyle = '#fff';
+  ctx.beginPath(); ctx.arc(-5, -3, 4, 0, 7); ctx.arc(5, -3, 4, 0, 7); ctx.fill();
+  ctx.fillStyle = '#000';
+  ctx.beginPath(); ctx.arc(-5, -3, 2, 0, 7); ctx.arc(5, -3, 2, 0, 7); ctx.fill();
+  ctx.strokeStyle = '#000'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.arc(0, 6, 5, 3.4, 6.0); ctx.stroke(); // ปากบึ้ง
+  ctx.restore();
+}
+function drawGround() {
+  const gy = H - GROUND_H;
+  ctx.fillStyle = '#e09b3d'; ctx.fillRect(0, gy, W, GROUND_H);
+  ctx.fillStyle = '#c97b1f';
+  for (let i = 0; i < W; i += 32) ctx.fillRect(i + (frame % 32) * -1 + 32, gy, 16, 16);
+  ctx.fillStyle = '#5ab552'; ctx.fillRect(0, gy, W, 10);
+}
+function drawBird() {
+  ctx.save();
+  ctx.translate(bird.x, bird.y);
+  ctx.rotate(Math.max(-0.5, Math.min(1.2, bird.vy/10)));
+  ctx.fillStyle = '#e52521';
+  ctx.beginPath(); ctx.arc(0, 0, bird.r, 0, 7); ctx.fill();
+  ctx.fillStyle = '#ffe0a0';
+  ctx.beginPath(); ctx.arc(2, 4, bird.r*0.6, 0, 7); ctx.fill();
+  ctx.fillStyle = '#fff';
+  ctx.beginPath(); ctx.arc(6, -5, 6, 0, 7); ctx.fill();
+  ctx.fillStyle = '#000';
+  ctx.beginPath(); ctx.arc(8, -5, 3, 0, 7); ctx.fill();
+  ctx.fillStyle = '#ff9100';
+  ctx.beginPath(); ctx.moveTo(bird.r-2, 0); ctx.lineTo(bird.r+10, 3);
+  ctx.lineTo(bird.r-2, 7); ctx.fill();
+  ctx.strokeStyle = '#000'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(0, -10); ctx.lineTo(11, -7); ctx.stroke();
+  ctx.restore();
+}
+function collidePipe(p) {
+  const bx = bird.x, by = bird.y, r = bird.r;
+  if (bx + r > p.x && bx - r < p.x + PIPE_W) {
+    if (by - r < p.top || by + r > p.top + p.gap) return true;
+  }
+  return false;
+}
+function collideEnemy(e) {
+  const dx = bird.x - e.x, dy = bird.y - e.y;
+  return Math.hypot(dx, dy) < bird.r + e.r - 3;
+}
+function loop() {
+  if (state === 'play') {
+    frame++;
+    if (frame < START_DELAY) {
+      drawBg(); drawGround(); drawBird();
+      requestAnimationFrame(loop); return;
     }
-    // clamp inside the safe area every pass so it converges cleanly
-    bubbles.forEach((b,i)=>{
-      if(i===0||b.popped) return;
-      b.x=Math.min(Math.max(b.r,b.x),W()-b.r);
-      b.y=Math.min(Math.max(headerPad()+b.r,b.y),H()-b.r);
+    bird.vy += GRAVITY; bird.y += bird.vy;
+    const d = difficulty();
+    if ((frame - START_DELAY) % d.interval === 0) spawnPipe();
+    if (d.enemies && (frame - START_DELAY) % Math.max(90, 220 - 5*score) === 0) spawnEnemy();
+
+    pipes.forEach(p => {
+      p.x -= d.speed;
+      if (p.amp) p.top = p.baseTop + Math.sin(frame * p.vmove + p.phase) * p.amp;
     });
-    if(!moved) break;
-  }
-}
+    enemies.forEach(e => {
+      e.x -= d.speed * 1.15;
+      e.y += Math.sin(frame*0.05 + e.phase) * 1.2;
+    });
+    pipes = pipes.filter(p => p.x + PIPE_W > -20);
+    enemies = enemies.filter(e => e.x > -30);
 
-layoutInitial();
-deOverlap();
-
-const REST=0.84, FRICTION=0.994;
-let pointer={x:0,y:0,down:false,target:null};
-
-function squash(b,axis){
-  const s=Math.min(0.20,(Math.abs(b.vx)+Math.abs(b.vy))*0.045);
-  if(axis==='x'){b.sx=1-s;b.sy=1+s;}
-  else if(axis==='y'){b.sy=1-s;b.sx=1+s;}
-  else{b.sx=1-s*0.7;b.sy=1+s*0.7;}
-}
-
-function physics(){
-  const w=W(),h=H(),top=headerPad();
-  for(const b of bubbles){
-    if(b.popped) continue;
-    // ease radius toward its target (base or expanded)
-    const target = b.expanded ? b.expandR : b.baseR;
-    if(Math.abs(b.r-target)>0.3){
-      b.r += (target-b.r)*0.18;
-      b.el.style.width=b.el.style.height=(b.r*2)+'px';
-    }
-    if(b.expanded){
-      // hold still & keep fully inside the safe area (clear of header & buttons)
-      b.vx*=0.8; b.vy*=0.8;
-      const botSafe = 78;   // leave room for the control buttons
-      if(b.x-b.r<10) b.x=b.r+10;
-      if(b.x+b.r>w-10) b.x=w-b.r-10;
-      if(b.y-b.r<top) b.y=top+b.r;
-      if(b.y+b.r>h-botSafe) b.y=h-b.r-botSafe;
-    } else if(b.dragging){
-      const tx=pointer.x-b.offx, ty=pointer.y-b.offy;
-      b.vx=(tx-b.x)*0.35; b.vy=(ty-b.y)*0.35;
-      b.x=tx; b.y=ty;
-    }else{
-      b.vy += Math.sin(performance.now()*0.0006+b.r)*0.0028;
-      // AI bubble feels a gentle pull back toward screen center
-      if(b.isAI){
-        const cx=w/2, cy=(top+h)/2;
-        b.vx += (cx-b.x)*0.00035;
-        b.vy += (cy-b.y)*0.00035;
-      }
-      b.x+=b.vx; b.y+=b.vy;
-      b.vx*=FRICTION; b.vy*=FRICTION;
-    }
-    if(b.x-b.r<0){b.x=b.r;b.vx=Math.abs(b.vx)*REST;squash(b,'x');}
-    if(b.x+b.r>w){b.x=w-b.r;b.vx=-Math.abs(b.vx)*REST;squash(b,'x');}
-    if(b.y-b.r<top){b.y=top+b.r;b.vy=Math.abs(b.vy)*REST;squash(b,'y');}
-    if(b.y+b.r>h){b.y=h-b.r;b.vy=-Math.abs(b.vy)*REST;squash(b,'y');}
-  }
-  for(let i=0;i<bubbles.length;i++){
-    const a=bubbles[i]; if(a.popped) continue;
-    for(let j=i+1;j<bubbles.length;j++){
-      const b=bubbles[j]; if(b.popped) continue;
-      let dx=b.x-a.x,dy=b.y-a.y,d=Math.hypot(dx,dy)||0.01,min=a.r+b.r;
-      if(d<min){
-        const nx=dx/d,ny=dy/d,ov=min-d;
-        // expanded bubble is immovable; the other gets pushed out fully
-        const aFix=a.expanded||a.dragging, bFix=b.expanded||b.dragging;
-        const m1=a.r*a.r, m2=b.r*b.r, tot=m1+m2;
-        if(aFix&&!bFix){ b.x+=nx*ov; b.y+=ny*ov; }
-        else if(bFix&&!aFix){ a.x-=nx*ov; a.y-=ny*ov; }
-        else if(!aFix&&!bFix){
-          a.x-=nx*ov*(m2/tot); a.y-=ny*ov*(m2/tot);
-          b.x+=nx*ov*(m1/tot); b.y+=ny*ov*(m1/tot);
-        }
-        const rel=(b.vx-a.vx)*nx+(b.vy-a.vy)*ny;
-        if(rel<0){const imp=-(1+REST)*rel/tot;
-          if(!aFix){a.vx-=imp*m2*nx;a.vy-=imp*m2*ny;}
-          if(!bFix){b.vx+=imp*m1*nx;b.vy+=imp*m1*ny;}}
-        if(!a.expanded) squash(a,'c');
-        if(!b.expanded) squash(b,'c');
+    for (const p of pipes) {
+      if (collidePipe(p)) { gameOver(); break; }
+      if (!p.scored && p.x + PIPE_W < bird.x) {
+        p.scored = true; score++; scoreEl.textContent = score;
       }
     }
+    if (state === 'play') for (const e of enemies) { if (collideEnemy(e)) { gameOver(); break; } }
+    if (bird.y + bird.r > H - GROUND_H) { bird.y = H - GROUND_H - bird.r; gameOver(); }
+    if (bird.y - bird.r < 0) { bird.y = bird.r; bird.vy = 0; }
   }
-  const now = performance.now();
-  for(const b of bubbles){
-    if(b.popped) continue;
-    b.sx+=(1-b.sx)*0.16; b.sy+=(1-b.sy)*0.16;
-    // iris drifts faster when the bubble moves quickly (light angle shifts)
-    const speed = Math.hypot(b.vx,b.vy);
-    b.ang += b.angV + Math.min(speed*0.6, 3);
-    b.iris.style.setProperty('--ang', b.ang+'deg');
-    // specular highlight slides opposite to motion, like a real reflection
-    if(b.spec){
-      const hx = Math.max(-7, Math.min(7, -b.vx*0.9));
-      const hy = Math.max(-7, Math.min(7, -b.vy*0.9));
-      b.spec.style.left = (b.specX + hx)+'%';
-      b.spec.style.top  = (b.specY + hy)+'%';
-      b.spec.style.transform = 'rotate('+b.specRot+'deg)';
-    }
-    if(b.glint){
-      b.glint.style.transform = 'translate('+Math.max(-6,Math.min(6,b.vx*0.7))+'px,'+Math.max(-6,Math.min(6,b.vy*0.7))+'px)';
-    }
-    // continuous jelly wobble: one axis stretches as the other squashes
-    // (volume-preserving). Gentler amplitude while expanded so text stays readable.
-    const amp = b.expanded ? b.wobAmp*0.35 : b.wobAmp;
-    const wob = Math.sin(now*b.wobSpeed + b.wobPhase) * amp;
-    const wx = 1 + wob, wy = 1 - wob;
-    b.el.style.setProperty('--tx',(b.x-b.r)+'px');
-    b.el.style.setProperty('--ty',(b.y-b.r)+'px');
-    b.el.style.transform='translate(var(--tx),var(--ty)) scale('+(b.sx*wx)+','+(b.sy*wy)+')';
-
-    // drag trail: drop a faint ghost when moving fast
-    if(b.dragging && speed>6 && now-(b._lastTrail||0)>45){
-      b._lastTrail = now;
-      spawnTrail(b);
-    }
-  }
-  requestAnimationFrame(physics);
+  drawBg(); pipes.forEach(drawPipe); enemies.forEach(drawEnemy); drawGround(); drawBird();
+  requestAnimationFrame(loop);
 }
-
-function getPos(e){const r=stage.getBoundingClientRect();const p=e.touches?e.touches[0]:e;return{x:p.clientX-r.left,y:p.clientY-r.top};}
-function hit(pos){
-  // expanded bubbles take priority (they sit on top)
-  for(let i=bubbles.length-1;i>=0;i--){const b=bubbles[i];if(b.popped)continue;if(b.expanded&&Math.hypot(pos.x-b.x,pos.y-b.y)<=b.r)return b;}
-  for(let i=bubbles.length-1;i>=0;i--){const b=bubbles[i];if(b.popped)continue;if(Math.hypot(pos.x-b.x,pos.y-b.y)<=b.r)return b;}
-  return null;
-}
-
-function down(e){
-  const pos=getPos(e); pointer.x=pos.x; pointer.y=pos.y;
-  const b=hit(pos); if(!b||b.popped) return; e.preventDefault();
-  pointer.down=true; pointer.target=b;
-  b.offx=pos.x-b.x; b.offy=pos.y-b.y;
-  b.downT=performance.now(); b.moved=0; b.px=pos.x; b.py=pos.y;
-  b.dragging=true; b.el.classList.add('grabbed');
-  stage.classList.add('dragging');
-  // hold-to-pop only on normal (not expanded) bubbles that stay roughly still
-  if(!b.expanded){
-    b.hold=setTimeout(()=>{ if(b.dragging&&b.moved<10) pop(b); },650);
-  }
-}
-function move(e){
-  if(!pointer.down||!pointer.target) return;
-  const pos=getPos(e); pointer.x=pos.x; pointer.y=pos.y;
-  const b=pointer.target;
-  b.moved+=Math.hypot(pos.x-b.px,pos.y-b.py); b.px=pos.x; b.py=pos.y;
-  if(b.moved>10&&b.hold){clearTimeout(b.hold);b.hold=null;}
-}
-function up(){
-  const b=pointer.target;
-  if(b){
-    if(b.hold){clearTimeout(b.hold);b.hold=null;}
-    b.dragging=false; b.el.classList.remove('grabbed');
-    const tap = performance.now()-b.downT<350 && b.moved<8;  // a real tap, not a drag
-    if(tap && !b.popped){
-      if(b.expanded) collapse(b); else expand(b);
-    }
-  }
-  pointer.down=false; pointer.target=null; stage.classList.remove('dragging');
-}
-
-function expand(b){
-  for(const o of bubbles) if(o!==b&&o.expanded) collapse(o);
-  b.expanded=true; b.dragging=false;
-  b.el.classList.remove('grabbed');
-  b.el.classList.add('expanded');
-  b.vx=0; b.vy=0;
-}
-function collapse(b){
-  b.expanded=false;
-  b.el.classList.remove('expanded');
-  b.vx=rand(-0.4,0.4); b.vy=rand(-0.3,0.3);
-}
-function spawnTrail(b){
-  const t = document.createElement('div');
-  t.className = 'trail';
-  const s = b.r*1.4;
-  t.style.width = t.style.height = s+'px';
-  t.style.left = (b.x - s/2)+'px';
-  t.style.top  = (b.y - s/2)+'px';
-  stage.appendChild(t);
-  requestAnimationFrame(()=> t.classList.add('fade'));
-  setTimeout(()=> t.remove(), 600);
-}
-
-function scatter(cx, cy, R){
-  // burst into many tiny droplets flying outward across the screen
-  const n = Math.round(rand(16,24));
-  for(let i=0;i<n;i++){
-    const d = document.createElement('div');
-    d.className = 'droplet';
-    const size = rand(5, Math.max(10, R*0.28));
-    d.style.width = d.style.height = size+'px';
-    // start near the rim of the burst bubble
-    const a0 = rand(0, Math.PI*2), r0 = rand(0, R*0.7);
-    const sx = cx + Math.cos(a0)*r0, sy = cy + Math.sin(a0)*r0;
-    d.style.left = (sx - size/2)+'px';
-    d.style.top  = (sy - size/2)+'px';
-    const dur = rand(2.0, 3.4);
-    d.style.setProperty('--dropDur', dur+'s');
-    stage.appendChild(d);
-
-    // fling outward (shorter throw = slower, calmer) + gentle gravity drift
-    const ang = rand(0, Math.PI*2);
-    const dist = rand(R*0.6, Math.max(W(),H())*0.35);
-    const fx = Math.cos(ang)*dist;
-    const fy = Math.sin(ang)*dist + rand(30,90); // gravity bias
-    d.style.setProperty('--fx', fx+'px');
-    d.style.setProperty('--fy', fy+'px');
-    d.style.setProperty('--fs', rand(0.3,0.8).toFixed(2));
-
-    // 1) appear in place so the eye registers the droplet
-    requestAnimationFrame(()=> d.classList.add('show'));
-    // 2) after a short beat, drift outward slowly while fading near the end
-    setTimeout(()=>{ d.classList.remove('show'); d.classList.add('fly'); }, rand(120,260));
-    setTimeout(()=> d.remove(), dur*1000 + 400);
-  }
-}
-
-const poppedStack = []; // history of burst bubbles, most-recent last
-
-function pop(b){
-  if(b.popped) return;
-  if(b.expanded) collapse(b);
-  b.popped=true; b.dragging=false;
-  b.el.classList.remove('grabbed');
-  b.el.classList.add('popping');
-  scatter(b.x, b.y, b.r);
-  // remove permanently once the burst animation finishes
-  setTimeout(()=>{ b.el.style.display='none'; }, 460);
-  poppedStack.push(b);
-  updateControls();
-}
-
-function restore(b){
-  b.el.classList.remove('popping','grabbed');
-  b.el.style.display='';
-  b.popped=false; b.expanded=false; b.el.classList.remove('expanded');
-  b.sx=1; b.sy=1; b.r=b.baseR;
-  b.el.style.width=b.el.style.height=(b.r*2)+'px';
-  b.x=rand(b.r,W()-b.r); b.y=headerPad()+b.r;
-  b.vx=rand(-1,1); b.vy=rand(0.4,1.2);
-}
-
-function undoPop(){
-  const b = poppedStack.pop();
-  if(b) restore(b);
-  updateControls();
-}
-function resetAll(){
-  // bring everything back, then re-run the AI-center / scattered layout
-  while(poppedStack.length){
-    const b = poppedStack.pop();
-    b.el.classList.remove('popping','grabbed','expanded');
-    b.el.style.display='';
-    b.popped=false; b.expanded=false; b.sx=1; b.sy=1; b.r=b.baseR;
-    b.el.style.width=b.el.style.height=(b.r*2)+'px';
-    b.vx=0; b.vy=0;
-  }
-  layoutInitial();
-  deOverlap();
-  updateControls();
-}
-
-stage.addEventListener('mousedown',down);
-window.addEventListener('mousemove',move);
-window.addEventListener('mouseup',up);
-stage.addEventListener('touchstart',down,{passive:false});
-window.addEventListener('touchmove',move,{passive:false});
-window.addEventListener('touchend',up);
-let resizeTimer=null;
-window.addEventListener('resize',()=>{
-  // clamp immediately so nothing flies off-screen mid-resize
-  for(const b of bubbles){
-    b.x=Math.min(Math.max(b.r,b.x),W()-b.r);
-    b.y=Math.min(Math.max(headerPad()+b.r,b.y),H()-b.r);
-  }
-  // re-scale bubble sizes to the new viewport (debounced)
-  clearTimeout(resizeTimer);
-  resizeTimer=setTimeout(()=>{
-    SCALE = sizeScale();
-    for(const b of bubbles){
-      b.baseR = b.data.r * SCALE;
-      b.expandR = expandedR(b.baseR);
-      if(!b.expanded){ b.r = b.baseR; }
-      b.el.style.width=b.el.style.height=(b.r*2)+'px';
-      // resize font to match
-      const fs=Math.max(10,b.baseR*0.25);
-      const term=b.el.querySelector('.term'), abbr=b.el.querySelector('.abbr');
-      if(term) term.style.fontSize=fs+'px';
-      if(abbr) abbr.style.fontSize=(fs*0.6)+'px';
-    }
-  },180);
-});
-
-// ----- control buttons -----
-const undoBtn = document.getElementById('undoBtn');
-const resetBtn = document.getElementById('resetBtn');
-function updateControls(){
-  const has = poppedStack.length>0;
-  undoBtn.disabled = !has;
-  resetBtn.disabled = !has;
-}
-undoBtn.addEventListener('click', undoPop);
-resetBtn.addEventListener('click', resetAll);
-updateControls();
-
-physics();
+function tap() { if (state === 'play') flap(); else start(); }
+window.addEventListener('keydown', e => { if (e.code === 'Space') { e.preventDefault(); tap(); } });
+cv.addEventListener('mousedown', e => { e.preventDefault(); if (state === 'play') flap(); });
+cv.addEventListener('touchstart', e => { e.preventDefault(); tap(); }, { passive: false });
+startBtn.addEventListener('click', e => { e.preventDefault(); start(); });
+startBtn.addEventListener('touchstart', e => { e.preventDefault(); start(); }, { passive: false });
+reset(); state = 'ready'; loop();
 </script>
-</body>
-</html>
